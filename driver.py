@@ -172,9 +172,6 @@ def main() -> None:
 
     client = Anthropic(api_key=api_key)
 
-    coder_messages: List[Dict[str, str]] = []
-    checker_messages: List[Dict[str, str]] = []
-
     last_checker_feedback = "No feedback yet; this is the initial iteration."
     max_iterations = 20
 
@@ -182,6 +179,7 @@ def main() -> None:
         print(f"\n========== ITERATION {iteration} ==========\n")
 
         # --- Step 1: Ask Agent_Coder to propose code changes ---
+        # Use fresh messages each iteration since we include current files in the prompt
         current_files = read_current_files()
 
         coder_user_prompt = f"""
@@ -221,15 +219,12 @@ IMPORTANT:
   and any double quotes escaped as \\".
 """
 
-        coder_messages.append({"role": "user", "content": coder_user_prompt})
         coder_text = call_agent(
             client=client,
             model=model,
             system_prompt=coder_conf["system"],
-            messages=coder_messages,
+            messages=[{"role": "user", "content": coder_user_prompt}],
         )
-        # Append assistant response to maintain conversation context
-        coder_messages.append({"role": "assistant", "content": coder_text})
         print("[Agent_Coder raw response]:\n", coder_text[:800], "\n")
 
         try:
@@ -300,15 +295,12 @@ Return ONLY a JSON object inside a ```json fenced code block, of the form:
 Do NOT include any commentary outside the JSON object.
 """
 
-        checker_messages.append({"role": "user", "content": checker_user_prompt})
         checker_text = call_agent(
             client=client,
             model=model,
             system_prompt=checker_conf["system"],
-            messages=checker_messages,
+            messages=[{"role": "user", "content": checker_user_prompt}],
         )
-        # Append assistant response to maintain conversation context
-        checker_messages.append({"role": "assistant", "content": checker_text})
         print("[Agent_Checker raw response]:\n", checker_text[:800], "\n")
 
         try:
