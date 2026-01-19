@@ -83,7 +83,7 @@ def call_agent(
     """
     response = client.messages.create(
         model=model,
-        max_tokens=4096,
+        max_tokens=16384,
         temperature=0.2,
         system=system_prompt,
         messages=messages,
@@ -191,14 +191,21 @@ Context for this step:
 CURRENT FILE CONTENTS (read from disk):
 {current_files}
 
-Project layout (for reference):
+Project layout (ONLY these files are allowed):
 - rta/__init__.py          : package marker (should exist).
 - rta/models.py            : task and task set definitions.
 - rta/analysis.py          : RTA algorithms and schedulability checks.
-- rta/generators.py        : (optional) random task generators such as UUniFast.
+- rta/generators.py        : UUniFast and random task generators (REQUIRED for robustness testing).
 - experiments/             : (optional) scripts such as schedulability-vs-utilisation plotting.
-- tests/test_rta.py        : unit tests for base-case RTA.
-- tests/test_rta_random.py : (optional) random/UUniFast-based tests.
+- tests/test_rta.py        : hand-crafted unit tests for base-case RTA.
+- tests/test_rta_random.py : UUniFast-based random tests (REQUIRED).
+
+STRICT FILE CONSTRAINTS:
+- Do NOT create any test files other than tests/test_rta.py and tests/test_rta_random.py.
+- Do NOT create test_rate_monotonic.py, test_rta_debug.py, or any other test files.
+- Put ALL hand-crafted tests in tests/test_rta.py.
+- Put ALL UUniFast/random tests in tests/test_rta_random.py.
+- Implement UUniFast helpers in rta/generators.py.
 
 Task for this iteration:
 - Propose small, incremental improvements towards a correct and tested base-case RTA.
@@ -277,6 +284,12 @@ Your job:
 - Decide whether we should "continue" or are "done" for the base-case RTA.
 - Provide feedback_for_coder with clear, actionable suggestions.
 - Optionally propose new or improved tests in new_tests.
+
+IMPORTANT CONSTRAINTS:
+- Tests MUST only go into tests/test_rta.py (hand-crafted) or tests/test_rta_random.py (UUniFast-based).
+- Do NOT suggest creating any other test files.
+- For robustness testing, you MUST use UUniFast-based random task generation as described in your system prompt.
+- Prioritize adding UUniFast helpers to rta/generators.py and random tests to tests/test_rta_random.py.
 
 STRICT OUTPUT REMINDER:
 Return ONLY a JSON object inside a ```json fenced code block, of the form:

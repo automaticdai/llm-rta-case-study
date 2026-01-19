@@ -1,6 +1,5 @@
 # Top-level model for both agents.
-# If this 404s for your account, try: claude-3-haiku-20240307
-model: claude-3-haiku-20240307
+model: claude-sonnet-4-5-20250929
 
 agents:
   coder:
